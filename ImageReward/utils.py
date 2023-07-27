@@ -23,6 +23,7 @@ from huggingface_hub import hf_hub_download
 from .models.CLIPScore import CLIPScore
 from .models.BLIPScore import BLIPScore
 from .models.AestheticScore import AestheticScore
+from .models.HyperScore import HyperScore
 
 _MODELS = {
     "ImageReward-v1.0": "https://huggingface.co/THUDM/ImageReward/blob/main/ImageReward.pt",
@@ -87,6 +88,7 @@ _SCORES = {
     "CLIP": "https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt",
     "BLIP": "https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_large.pth",
     "Aesthetic": "https://github.com/christophschuhmann/improved-aesthetic-predictor/raw/main/sac%2Blogos%2Bava1-l14-linearMSE.pth",
+    "HyperScore": None
 }
 
 
@@ -96,27 +98,30 @@ def available_scores() -> List[str]:
 
 
 def _download(url: str, root: str):
-    os.makedirs(root, exist_ok=True)
-    filename = os.path.basename(url)
+    if not url == None or root == None:
+        os.makedirs(root, exist_ok=True)
+        filename = os.path.basename(url)
 
-    download_target = os.path.join(root, filename)
+        download_target = os.path.join(root, filename)
 
-    if os.path.exists(download_target) and not os.path.isfile(download_target):
-        raise RuntimeError(f"{download_target} exists and is not a regular file")
+        if os.path.exists(download_target) and not os.path.isfile(download_target):
+            raise RuntimeError(f"{download_target} exists and is not a regular file")
 
-    if os.path.isfile(download_target):
-        return download_target
+        if os.path.isfile(download_target):
+            return download_target
 
-    with urllib.request.urlopen(url) as source, open(download_target, "wb") as output:
-        with tqdm(total=int(source.info().get("Content-Length")), ncols=80, unit='iB', unit_scale=True, unit_divisor=1024) as loop:
-            while True:
-                buffer = source.read(8192)
-                if not buffer:
-                    break
+        with urllib.request.urlopen(url) as source, open(download_target, "wb") as output:
+            with tqdm(total=int(source.info().get("Content-Length")), ncols=80, unit='iB', unit_scale=True, unit_divisor=1024) as loop:
+                while True:
+                    buffer = source.read(8192)
+                    if not buffer:
+                        break
 
-                output.write(buffer)
-                loop.update(len(buffer))
-
+                    output.write(buffer)
+                    loop.update(len(buffer))
+    else:
+        download_target = None
+        
     return download_target
 
 
@@ -158,6 +163,8 @@ def load_score(name: str = "CLIP", device: Union[str, torch.device] = "cuda" if 
         state_dict = torch.load(model_path, map_location='cpu')
         model = AestheticScore(download_root=model_download_root, device=device).to(device)
         model.mlp.load_state_dict(state_dict,strict=False)
+    elif name == "HyperScore":
+        model = HyperScore(device=device)
     else:
         raise RuntimeError(f"Score {name} not found; available scores = {available_scores()}")
     

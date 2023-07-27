@@ -92,4 +92,6 @@ class AestheticScore(nn.Module):
         _, indices = torch.sort(rank, dim=0)
         indices = indices + 1
         
+        print(indices, rewards)
+        
         return indices.detach().cpu().numpy().tolist(), rewards.detach().cpu().numpy().tolist()

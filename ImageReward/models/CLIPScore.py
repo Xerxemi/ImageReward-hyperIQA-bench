@@ -75,4 +75,6 @@ class CLIPScore(nn.Module):
         _, indices = torch.sort(rank, dim=0)
         indices = indices + 1
         
+        print(rewards)
+        
         return indices.detach().cpu().numpy().tolist(), rewards.detach().cpu().numpy().tolist()
