@@ -1,12 +1,13 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+# import torch.nn.functional as F
 import torchvision
 from PIL import Image
 import models
 import numpy as np
 
 patches = 25
+model_path = './pretrained/hyperIQA_hybrid_latest.pth'
 
 class HyperScore(nn.Module):
     def __init__(self, device='cpu'):
@@ -14,7 +15,7 @@ class HyperScore(nn.Module):
         self.device = device
         self.model_hyper = models.HyperNet(16, 112, 224, 112, 56, 28, 14, 7).to(self.device)
         self.model_hyper.train(False)
-        self.model_hyper.load_state_dict((torch.load('./pretrained/koniq_pretrained.pkl')))   
+        self.model_hyper.load_state_dict((torch.load(model_path)))
         
         self.pil_to_tensor = lambda x: torchvision.transforms.ToTensor()(x).unsqueeze_(0)
         self.tensor_to_pil = lambda x: torchvision.transforms.ToPILImage()(x.squeeze_(0))
@@ -87,14 +88,11 @@ class HyperScore(nn.Module):
             
         score_dict = {scores[i]: i+1 for i in range(len(scores))} 
         sorted_dict = {key: idx+1 for idx, (key, value) in enumerate(dict(sorted(score_dict.items(), reverse=True)).items())}
-        #print(sorted_dict)
         indices_rewards = {sorted_dict[key]: key for key, value in score_dict.items()}
         
         #sorted_dict = dict(sorted(score_dict.items(), key=lambda x:x[1], reverse=True))
         
         rewards = [*indices_rewards.values()]
         indices = [*indices_rewards.keys()]
-        
-        print(indices, rewards)
         
         return indices, rewards

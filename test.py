@@ -50,7 +50,7 @@ def test(args):
     model_type_list = []
     if args.model_type == 'all':
         model_type_list = ['ImageReward-v1.0', 'CLIP', 'BLIP', 'Aesthetic']
-        model_type_list = ["HyperScore"]        
+        model_type_list = ["HyperScore"]
     else:
         model_type_list = [args.model_type]
 

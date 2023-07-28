@@ -1,3 +1,7 @@
+# Additional Info
+
+Place model file in ./pretrained for testing
+
 # ImageReward
 
 <p align="center">
